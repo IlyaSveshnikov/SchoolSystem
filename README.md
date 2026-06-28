@@ -1,36 +1,141 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ЭИС «Школа»
 
-## Getting Started
+Электронная информационная система управления школой: учёт предметов, учителей, учеников,
+классов, расписания и оценок с аналитикой. Админ-панель с авторизацией, поиском, фильтрами,
+загрузкой фото, графиками и тёмной темой.
 
-First, run the development server:
+> 🔗 **Демо:** _добавьте ссылку после деплоя_
+> 🔑 Демо-доступ: `admin` / `admin`
+
+<!-- Совет: добавьте сюда 2–3 скриншота (дашборд, аналитика, раздел учеников) -->
+<!-- ![Дашборд](docs/screenshot-dashboard.png) -->
+
+## Стек
+
+- **Next.js 16** (App Router) + **React 19** + **TypeScript**
+- **PostgreSQL** (драйвер [`pg`](https://node-postgres.com/), параметризованные SQL-запросы)
+- **Tailwind CSS v4** + **shadcn/ui** (Radix)
+- **zod** — валидация API · **sonner** — уведомления · **next-themes** — тема · **recharts** — графики
+- **Vitest** — тесты · **GitHub Actions** — CI (lint → test → build)
+
+## Возможности
+
+- **Авторизация** — вход администратора, защита всех страниц и API через proxy (middleware), httpOnly-сессия, выход.
+- **Предметы** — поиск, CRUD, описание, привязка учителей; запрет дубликатов (на клиенте и в БД через `UNIQUE`).
+- **Учителя** — карточки с аватаром/фото, контактами, образованием, стажем, категорией; поиск; CRUD.
+- **Ученики** — карточки с аватаром, классом, полом, датой рождения, родителем; поиск по ФИО и классу; группировка по классам; CRUD.
+- **Классы** — CRUD, счётчик учеников, защита от удаления непустого класса.
+- **Расписание** — только по существующим классам; редактирование ячеек с выпадающими списками предметов и учителей (учителя фильтруются по выбранному предмету).
+- **Оценки** — журнал по ученику (добавление/удаление, цветовая индикация баллов).
+- **Аналитика** — метрики и графики (recharts): средний балл по классам и предметам, распределение оценок.
+- **UX** — единая айдентика (акцентный цвет, шрифт Inter), тёмная/светлая тема, toast-уведомления,
+  скелетоны при загрузке, пустые состояния, аватары с инициалами, бейджи, адаптивная сетка.
+
+## Требования
+
+- Node.js 20+
+- PostgreSQL 14+
+
+## Установка и запуск
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# 1. Зависимости
+npm install
+
+# 2. База данных: создать БД и накатить схему с демо-данными
+createdb school
+psql -d school -f db/schema.sql
+psql -d school -f db/seed.sql   # необязательно — демо-данные
+
+# 3. Конфигурация: скопировать пример и заполнить значения
+cp .env.example .env
+
+# 4. Запуск
+npm run dev                     # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+После запуска откроется страница входа — используйте логин и пароль из `.env`
+(по умолчанию `admin` / `admin`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Переменные окружения (`.env`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Переменная       | Назначение                                   | Пример                |
+|------------------|----------------------------------------------|-----------------------|
+| `DB_HOST`        | хост PostgreSQL                              | `localhost`           |
+| `DB_USER`        | пользователь БД                              | `postgres`            |
+| `DB_PASSWORD`    | пароль БД                                    | `secret`              |
+| `DB_NAME`        | имя базы                                     | `school`              |
+| `DB_PORT`        | порт                                         | `5432`                |
+| `ADMIN_USERNAME` | логин администратора                         | `admin`               |
+| `ADMIN_PASSWORD` | пароль администратора                        | `admin`               |
+| `AUTH_SECRET`    | секрет сессии (длинная случайная строка)     | `a1b2c3...` (32+ симв.)|
 
-## Learn More
+## Скрипты
 
-To learn more about Next.js, take a look at the following resources:
+| Команда         | Описание                     |
+|-----------------|------------------------------|
+| `npm run dev`   | dev-сервер                   |
+| `npm run build` | production-сборка            |
+| `npm run start` | запуск собранного приложения |
+| `npm run lint`  | ESLint                       |
+| `npm run test`  | модульные тесты (Vitest)     |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Структура проекта
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+app/
+  api/              REST-эндпоинты: subjects, teachers, students, classes,
+                    schedule, marks, analytics, upload, auth/(login|logout)
+  login/            страница входа
+  subjects/ teachers/ students/ classes/ schedule/ analytics/   разделы
+  page.tsx          дашборд
+  layout.tsx        корневой layout (тема, шрифт, Toaster)
+components/
+  *-cards.tsx       карточки сущностей
+  alert-*.tsx       диалоги добавления/редактирования
+  app-sidebar.tsx   навигация + тема + выход
+  app-shell.tsx     каркас (скрывает сайдбар на /login)
+  entity-avatar.tsx, page-header.tsx, skeleton-cards.tsx, photo-input.tsx
+  ui/               компоненты shadcn
+lib/                слой данных (db, subjects, teachers, students, classes, marks)
+                    + api.ts (валидация/обработка ошибок) + utils.ts
+hooks/              useList — загрузка списков
+db/                 schema.sql, seed.sql
+proxy.ts            защита маршрутов (авторизация)
+```
 
-## Deploy on Vercel
+## Архитектурные решения
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Без ORM** — данные через `pg` и параметризованные SQL-запросы в `lib/*`. Так нагляднее
+  демонстрируется работа с SQL (JOIN, агрегаты, внешние ключи).
+- **Единый слой API** — `lib/api.ts` централизует разбор тела (`zod`), формат ответов и
+  обработку ошибок, включая коды PostgreSQL (нарушение уникальности → 409 и т.п.).
+- **Простая авторизация** — один администратор, httpOnly-cookie сессии, проверка в `proxy.ts`.
+  Намеренно лёгкая схема для админ-панели; при необходимости заменяется на Auth.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Тесты и CI
+
+- `npm run test` — модульные тесты (Vitest).
+- CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) на каждый push/PR прогоняет
+  `lint → test → build`.
+
+## Деплой
+
+Рекомендуется [Vercel](https://vercel.com) + управляемый PostgreSQL
+([Neon](https://neon.tech) / [Supabase](https://supabase.com)):
+
+1. Создайте БД у провайдера, накатите `db/schema.sql` (и при желании `db/seed.sql`).
+2. В настройках проекта Vercel задайте все переменные окружения (`DB_*`, `ADMIN_*`, `AUTH_SECRET`).
+   Для `AUTH_SECRET` используйте длинную случайную строку; смените `ADMIN_PASSWORD`.
+3. Деплой.
+
+### Загрузка фото
+
+Эндпоинт `app/api/upload/route.ts` работает в двух режимах:
+
+- **Локально** (нет `BLOB_READ_WRITE_TOKEN`) — файлы сохраняются в `public/uploads`.
+- **В проде** (токен задан) — загрузка идёт в [Vercel Blob](https://vercel.com/docs/storage/vercel-blob)
+  (файловая система serverless эфемерна, локальная папка там не годится).
+
+Чтобы включить Blob на Vercel: в проекте откройте **Storage → Create → Blob**, привяжите store —
+переменная `BLOB_READ_WRITE_TOKEN` подставится автоматически. Готово, дополнительный код не нужен.
