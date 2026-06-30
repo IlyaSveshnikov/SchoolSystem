@@ -7,12 +7,18 @@
 > 🔗 **Демо:** https://school-system-opal-delta.vercel.app/
 > 🔑 Демо-доступ: `admin` / `admin001`
 
-## Демонстрация некоторых страниц
+## Демонстрация
 
-![Стартовая страница](docs/main-page.png)
-![Раздел учителей](docs/teachers.png)
-![Расписаний](docs/schedule.png)
-![Аналитика](docs/analytics.png)
+<table>
+  <tr>
+    <td width="50%" align="center"><img src="docs/main-page.png" alt="Стартовая страница" /><br/><sub><b>Стартовая страница</b></sub></td>
+    <td width="50%" align="center"><img src="docs/teachers.png" alt="Раздел учителей" /><br/><sub><b>Раздел учителей</b></sub></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><img src="docs/schedule.png" alt="Расписание" /><br/><sub><b>Расписание</b></sub></td>
+    <td width="50%" align="center"><img src="docs/analytics.png" alt="Аналитика" /><br/><sub><b>Аналитика</b></sub></td>
+  </tr>
+</table>
 
 ## Стек
 
